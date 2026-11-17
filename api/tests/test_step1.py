@@ -35,6 +35,7 @@ def test_signed_out_gets_nothing(client):
     client.cookies.clear()
     assert get(client, "'Items'!A:L").status_code == 401
     assert client.get("/", follow_redirects=False).headers["location"] == ("/signin" if PAGE.exists() else "/admin")
+    assert "<h1>" + ("BOMTree" if PAGE.exists() else "Hippo") + "</h1>" in client.get("/signin").text
 
 
 def test_tabs_come_back_as_the_sheet_had_them(client):

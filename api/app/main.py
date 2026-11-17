@@ -72,7 +72,10 @@ def index(request: Request):
 
 @app.get("/signin")
 def signin():
-    return FileResponse(STATIC / "signin.html")
+    html = (STATIC / "signin.html").read_text("utf-8")
+    if not (STATIC / "bomtree.html").exists():   # the Hippo service: its sign-in leads to the People page, not BOMTree
+        html = html.replace("BOMTree", "Hippo")
+    return HTMLResponse(html, headers={"Cache-Control": "no-store"})
 
 
 @app.get("/{name}.js")
