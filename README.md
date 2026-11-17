@@ -81,8 +81,8 @@ Hippo is the whole Postgres database. BOMTree is one part of it, the `bomtree` s
 
 **Where it runs** (live since 17 Nov 2026). Two Railway services run this code against the same Postgres:
 
-- **`Hippo`** deploys from this GitHub repo (branch `main`, root directory `api/`) on every push. It serves the People page (`/admin`) and the Hippo connector (`/hippo/mcp`); it has no BOMTree page, so `/` opens the People page.
-- **`bomtree-app`** serves the BOMTree page and connector. It is deployed by hand from a computer that has the page files (step 2 of "Setting it up" above), never from GitHub.
+- **`Hippo`** (`https://hippo-production-76cdc1ed.up.railway.app`) deploys from this GitHub repo (branch `main`, root directory `api/`) on every push. It serves the People page (`/admin`) and the Hippo connector (`/hippo/mcp`); it has no BOMTree page, so `/` opens the People page.
+- **`bomtree-app`** (`https://bomtree-app-production.up.railway.app`) serves the BOMTree page and connector. It is deployed by hand from a computer that has the page files (step 2 of "Setting it up" above), never from GitHub.
 
 Backups taken just before going live (pg_dump, restore tested) are kept outside the repo.
 
@@ -91,12 +91,13 @@ Backups taken just before going live (pg_dump, restore tested) are kept outside 
 1. Deploy the new code to `bomtree-app` first. It looks for people in `hippo` and in `bomtree`, so it works before and after step 2.
 2. Run `6_hippo.sql` as one query, so its locks last a moment instead of one round trip per statement: `psql $env:BOMTREE_DB -X -c "$(Get-Content 6_hippo.sql -Raw)"`. It moves people to `hippo`, makes `hippo_admin` the owner of BOMTree's tables, and makes BOMTree's all-family admins the first Hippo admins.
 3. Give the three logins a password (hex, so the URLs need no escaping): `ALTER ROLE hippo_read LOGIN PASSWORD '...'`, the same for `hippo_write` and `hippo_admin`. Send each on its own.
-4. The `Hippo` service: a new service from this GitHub repo with root directory `api`, a generated domain, and these variables (the connector and People page stay off without the `HIPPO_*` ones):
+4. The `Hippo` service: a new service from this GitHub repo with root directory `api`, Dockerfile path `Dockerfile`, health check path `/health` (set on the service: Railway no longer reads `railway.json`), a generated domain on port 8000, and these variables (the connector and People page stay off without the `HIPPO_*` ones):
 
     ```
     DATABASE_URL, BOMTREE_APP_PASSWORD, ENVIRONMENT, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET,
     INDEX_SHEET_ID, BLUEPRINTS_SHEET_ID                as for bomtree-app
     PUBLIC_URL=https://<the Hippo service's domain>
+    PORT=8000
     SECRET_KEY=<its own long random string>
     HIPPO_READ_PASSWORD, HIPPO_WRITE_PASSWORD, HIPPO_ADMIN_PASSWORD
     HIPPO_READ_URL=postgresql://hippo_read:${{HIPPO_READ_PASSWORD}}@${{Postgres.RAILWAY_PRIVATE_DOMAIN}}:5432/${{Postgres.PGDATABASE}}
