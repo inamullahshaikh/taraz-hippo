@@ -1,0 +1,14 @@
+gen-lang-client-*.json
+service-account*.json
+snapshot*/
+*.dump
+*.backup
+.venv/
+.env*
+__pycache__/
+.pytest_cache/
+# Internal Taraz data (sheet links, org map, product details). Kept on this computer only, for the
+# bomtree-app deploy (railway up --no-gitignore); this repo is public.
+api/app/static/bomtree.html
+api/app/static/tos-launcher.js
+today-dry-run-report.md

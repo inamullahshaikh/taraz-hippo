@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BOMTree · Sign in</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--paper:#F2F5F4;--surface:#fff;--ink:#13201E;--muted:#5A6B67;--line:#D6DFDB;--teal:#0B6B66;--teal-soft:#E1EFEC;--bad:#B3261E;--bad-soft:#FBE4E2}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:16px;background:var(--paper);color:var(--ink);font:15px/1.5 "IBM Plex Sans","Segoe UI",system-ui,sans-serif}
+main{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px 24px;display:flex;flex-direction:column;gap:14px}
+h1{margin:0;font:600 1.6rem "Chakra Petch","Segoe UI",sans-serif;color:var(--teal)}
+p{margin:0;color:var(--muted);font-size:.9rem}
+a.btn,button{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit;font-weight:600;text-decoration:none;cursor:pointer}
+a.btn:hover,button:hover{border-color:var(--teal);background:var(--teal-soft)}
+a.btn:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.err{border-left:4px solid var(--bad);background:var(--bad-soft);border-radius:8px;padding:8px 12px;font-size:.88rem}
+form{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+input{padding:9px 10px;border:1px solid var(--line);border-radius:8px;font:inherit}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <h1>BOMTree</h1>
+  <p>Sign in with the account your BOMTree admin added.</p>
+  <div class="err" id="err" role="alert" hidden></div>
+  <a class="btn" id="google" href="/api/v1/auth/login?provider=google" hidden>Sign in with Google</a>
+  <a class="btn" id="microsoft" href="/api/v1/auth/login?provider=microsoft" hidden>Sign in with Microsoft</a>
+  <p id="none" hidden>Sign-in is not set up yet.</p>
+  <form id="dev" hidden>
+    <label for="email">Email (local testing only)</label>
+    <input id="email" type="email" required autocomplete="email">
+    <button type="submit">Sign in</button>
+  </form>
+</main>
+<script>
+const q = new URLSearchParams(location.search), next = q.get("next") || "/";
+const ERR = {failed: "Sign-in did not finish. Try again.",
+             denied: "This account can't use BOMTree. Ask your BOMTree admin to add your email address."};
+if (ERR[q.get("error")]) { err.textContent = ERR[q.get("error")]; err.hidden = false; }
+for (const a of [google, microsoft]) a.href += "&next=" + encodeURIComponent(next);
+fetch("/api/v1/auth/config").then(r => r.json()).then(c => {
+  google.hidden = !c.google; microsoft.hidden = !c.microsoft; dev.hidden = !c.dev_login;
+  none.hidden = c.google || c.microsoft || c.dev_login;
+});
+dev.addEventListener("submit", async e => {
+  e.preventDefault();
+  const r = await fetch("/api/v1/auth/dev-login", {method: "POST", headers: {"Content-Type": "application/json"},
+                                                    body: JSON.stringify({email: email.value})});
+  if (r.ok) location.href = next; else { err.textContent = ERR.denied; err.hidden = false; }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+# Pinned to the versions the tests passed with (Python 3.12), so Railway builds what was tested.
+fastapi==0.162.5
+starlette==1.10.0
+pydantic==2.14.3
+uvicorn[standard]==0.54.0
+psycopg[binary]==3.3.9
+psycopg-pool==3.3.3
+httpx==0.28.1
+itsdangerous==2.2.0
+tzdata==2026.6
+python-multipart==0.0.33
